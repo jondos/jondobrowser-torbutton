@@ -4,7 +4,7 @@
    - vim: set sw=2 sts=2 ts=8 et syntax=xml:
   -->
 
-<!ENTITY aboutTor.title "Über Tor">
+<!ENTITY aboutTor.title "Über JonDoBrowser">
 
 <!ENTITY aboutTor.outOfDateTorOn.label "WARNUNG: Dieser Browser ist nicht mehr aktuell!">
 <!ENTITY aboutTor.outOfDateTorOff.label "AUSSERDEM, dieser Browser ist nicht aktuell.">
