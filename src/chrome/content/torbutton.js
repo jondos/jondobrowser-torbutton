@@ -2346,7 +2346,7 @@ function torbutton_update_noscript_button()
       // Update every window's NoScript status...
       while (browserEnumerator.hasMoreElements()) {
         let win = browserEnumerator.getNext();
-        win.noscriptOverlay._syncUINow();
+        //win.noscriptOverlay._syncUINow();
       }
       torbutton_log(3, 'Updated NoScript status for security settings');
     } catch (e) {
@@ -2357,7 +2357,7 @@ function torbutton_update_noscript_button()
 
 // Returns true if we should show the tor browser manual.
 function torbutton_show_torbrowser_manual() {
-  let availableLocales = ["en", "es", "fr", "pt", "zh"];
+  let availableLocales = ["de", "en", "es", "fr", "nl", "pt", "tr", "vi", "zh"];
   let shortLocale = torbutton_get_general_useragent_locale().substring(0, 2);
   return availableLocales.indexOf(shortLocale) >= 0;
 }

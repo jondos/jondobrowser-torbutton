@@ -7,16 +7,17 @@ Cu.import("resource://gre/modules/Services.jsm");
 
 // A list of locales for which the banner has been translated.
 const kBannerLocales = [
-  "bg",
-  "da",
-  "el",
+  "de",
   "en",
   "es",
+  "fa",
   "fr",
-  "fr_CA",
-  "is",
   "it",
-  "nb",
+  "nl",
+  "pl",
+  "pt",
+  "ru",
+  "sv",
   "tr",
 ];
 
@@ -46,10 +47,11 @@ const gStringBundle = Services.strings.createBundle(kPropertiesURL);
 // Check if we should show the banner, depends on
 // browser locale, current date, and how many times
 // we have already shown the banner.
-const shouldShowBanner = function ({ locale, shortLocale }) {
+const shouldShowBanner = function (shortLocale) {
   try {
     // If our override test pref is true, then just show the banner regardless.
-    if (Services.prefs.getBoolPref("extensions.torbutton.testBanner", false)) {
+    if (Services.prefs.prefHasUserValue("extensions.torbutton.testBanner") &&
+        Services.prefs.getBoolPref("extensions.torbutton.testBanner") === true) {
       return true;
     }
     // Don't show a banner if update is needed.
@@ -58,7 +60,7 @@ const shouldShowBanner = function ({ locale, shortLocale }) {
       return false;
     }
     // Only show banner when we have that locale and if a donation redirect exists.
-    if (kBannerLocales.indexOf(locale) === -1 ||
+    if (kBannerLocales.indexOf(shortLocale) === -1 ||
         kDonationPageLocales.indexOf(shortLocale) === -1) {
       return false;
     }
@@ -92,7 +94,7 @@ var bannerData = function () {
   // Read short locale.
   let locale = Services.prefs.getCharPref("general.useragent.locale");
   let shortLocale = locale.match(/[a-zA-Z]+/)[0].toLowerCase();
-  if (!shouldShowBanner({ locale, shortLocale })) {
+  if (!shouldShowBanner(shortLocale)) {
     return null;
   }
   // Load tag lines.
@@ -102,10 +104,11 @@ var bannerData = function () {
       "aboutTor.donationBanner.tagline" + (index + 1));
     taglines.push(tagline);
   }
-  // Read slogan and donate button text.
+  // Read slogan, mozilla, and donate button text.
   let slogan = gStringBundle.GetStringFromName("aboutTor.donationBanner.slogan");
+  let mozilla = gStringBundle.GetStringFromName("aboutTor.donationBanner.mozilla");
   let donate = gStringBundle.GetStringFromName("aboutTor.donationBanner.donate");
-  return JSON.stringify({ taglines, slogan, donate, shortLocale });
+  return JSON.stringify({ taglines, slogan, mozilla, donate, shortLocale });
 };
 
 // Export utility functions for external use.

@@ -89,7 +89,7 @@ var AboutTorListener = {
   onChromeDataUpdate: function(aData) {
     let body = content.document.body;
 
-    // Update status: tor on/off, update needed, Tor Browser manual shown.
+    // Update status: tor on/off, update needed, JonDoBrowser manual shown.
     if (aData.torOn)
       body.setAttribute("toron", "yes");
     else
@@ -129,7 +129,7 @@ var AboutTorListener = {
   onLocaleChange: function(aLocale) {
     this.insertPropertyStrings();
 
-    // Set Tor Browser manual link.
+    // Set JonDoBrowser manual link.
     content.document.getElementById("manualLink").href =
                             "https://tb-manual.torproject.org/" + aLocale;
 
@@ -141,7 +141,7 @@ var AboutTorListener = {
       elem.href = url.replace(/__LANG__/g, aLocale.replace(/-/g, '_'));
     }
 
-    // Display the Tor Browser product name and version.
+    // Display the JonDoBrowser product name and version.
     try {
       const kBrandBundle = "chrome://branding/locale/brand.properties";
       let brandBundle = Cc["@mozilla.org/intl/stringbundle;1"]
