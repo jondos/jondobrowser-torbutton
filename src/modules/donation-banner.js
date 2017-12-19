@@ -48,6 +48,9 @@ const gStringBundle = Services.strings.createBundle(kPropertiesURL);
 // browser locale, current date, and how many times
 // we have already shown the banner.
 const shouldShowBanner = function (shortLocale) {
+  // Feature 1860 - Control the Torbrowser banner message system
+  // Don't show donation banner for now
+  return false;
   try {
     // If our override test pref is true, then just show the banner regardless.
     if (Services.prefs.prefHasUserValue("extensions.torbutton.testBanner") &&
