@@ -33,6 +33,9 @@ var m_tb_confirming_plugins = false;
 var m_tb_window_height = window.outerHeight;
 var m_tb_window_width = window.outerWidth;
 
+var m_tb_inner_window_height;
+var m_tb_inner_window_width;
+
 var m_tb_tbb = false;
 
 var m_tb_control_ipc_file = null;    // Set if using IPC (UNIX domain socket).
@@ -2001,6 +2004,80 @@ function torbutton_is_windowed(wind) {
 
 let stopLanguagePromptObserver;
 
+var resizeTimeout;
+var m_tb_resize_date_2 = null;
+function resizeThrottler() {
+
+	if ( !resizeTimeout && !(window.windowState === window.STATE_MAXIMIZED || window.windowState === window.STATE_FULLSCREEN)) {
+	      resizeTimeout = setTimeout(function() {
+		resizeTimeout = null;
+		actualResizeHandler();
+	       }, 166);
+	}
+}
+
+function actualResizeHandler() {
+	var heightChanged = false;
+	var widthChanged = false;
+
+	if (Ci.nsIWebProgressListener.STATE_STOP) {
+	if (m_tb_inner_window_height != null && m_tb_inner_window_width != null) {
+		if (window.outerWidth != m_tb_inner_window_width) {
+			widthChanged = true;
+		}
+		if (window.outerHeight != m_tb_inner_window_height) {
+			heightChanged = true;
+		}
+	
+		if (widthChanged || heightChanged) {
+
+		    // Do not add another notification if one is already showing.
+		    const notificationName = "torbutton-maximize-notification";
+		    let box = gBrowser.getNotificationBox();
+		    if (box.getNotificationWithValue(notificationName))
+		      return;
+
+		    // Rate-limit showing our notification if needed.
+		    if (m_tb_resize_date_2 === null) {
+		    	      m_tb_resize_date_2 = Date.now();
+		    } else {
+			      // We wait at least another second before we show a new
+			      // notification. Should be enough to rule out OSes that call our
+			      // handler rapidly due to internal workings.
+			      if (Date.now() - m_tb_resize_date_2 < 2000) {
+				return;
+		    	      }
+		      	      // Resizing but we need to reset |m_tb_resize_date| now.
+		      	      m_tb_resize_date_2 = Date.now();
+		    }
+		    let sb = torbutton_get_stringbundle();
+		    let sbSvc = Cc["@mozilla.org/intl/stringbundle;1"].getService(Ci.nsIStringBundleService);
+    		    let bundle = sbSvc.createBundle("chrome://global/locale/commonDialogs.properties");
+
+		    let button_label =  torbutton_get_property_string("torbutton.reset_button"); //bundle.GetStringFromName("OK");
+
+		    let buttons = [{
+			      label: button_label,
+			      popup: null,
+			      callback:
+				function() {
+				  m_tb_prefs.setIntPref("extensions.torbutton.maximize_warnings_remaining",
+					m_tb_prefs.getIntPref("extensions.torbutton.maximize_warnings_remaining") - 0);
+				  window.resizeTo(m_tb_inner_window_width, m_tb_inner_window_height); 
+					
+				}
+		    }];
+
+		    let message = torbutton_get_property_string("torbutton.resize_warning");
+		    let priority = box.PRIORITY_WARNING_LOW;
+		    //let message = "For security reasons, it is recommended that you leave your browser size unchanged. Click on Reset 						to revert back to the original size";
+		    box.appendNotification(message, notificationName, null, priority, buttons);
+
+		}
+	}
+	}
+}
+
 // Bug 1506 P3: This is needed pretty much only for the version check
 // and the window resizing. See comments for individual functions for
 // details
@@ -2047,6 +2124,13 @@ function torbutton_new_window(event)
     torbutton_do_async_versioncheck();
 
     torbutton_do_tor_check();
+  
+    window.addEventListener("resize", resizeThrottler, false);
+
+	setTimeout(function() {
+		m_tb_inner_window_height = window.outerHeight;
+		m_tb_inner_window_width = window.outerWidth;
+	       }, 2);
 }
 
 // Bug 1506 P2: This is only needed because we have observers
@@ -2159,7 +2243,7 @@ var torbutton_resizelistener =
               getService(Ci.nsIStringBundleService);
             let bundle = sbSvc.
               createBundle("chrome://global/locale/commonDialogs.properties");
-            let button_label = bundle.GetStringFromName("OK");
+            let button_label =  torbutton_get_property_string("torbutton.reset_button"); //bundle.GetStringFromName("OK");
 
             let buttons = [{
               label: button_label,
@@ -2169,6 +2253,7 @@ var torbutton_resizelistener =
                 function() {
                   m_tb_prefs.setIntPref("extensions.torbutton.maximize_warnings_remaining",
                   m_tb_prefs.getIntPref("extensions.torbutton.maximize_warnings_remaining") - 1);
+                  window.resizeTo(m_tb_inner_window_width, m_tb_inner_window_height);
                 }
             }];
 
